@@ -35,24 +35,28 @@ function Dash() {
     refetchInterval: 20 * 6 * 10000,
   });
 
-  const { isPending: pendingBus, data: busData } = useQuery({
+  const {
+    isPending: pendingBus,
+    data: busData,
+    dataUpdatedAt: busUpdatedAt,
+  } = useQuery({
     queryKey: ["busses"],
     queryFn: fetch_bus,
     refetchInterval: 15000,
   });
 
   useEffect(() => {
-    if (driveUpdatedAt > updatedAt) {
-      setUpdatedAt(driveUpdatedAt);
+    if (busUpdatedAt > updatedAt) {
+      setUpdatedAt(busUpdatedAt);
     }
-  }, [updatedAt, driveUpdatedAt]);
+  }, [updatedAt, busUpdatedAt]);
 
   useEffect(() => {
     if (busData) {
       const newBlocks = [];
       for (var i = 0; i < busData.length; i++) {
         newBlocks.push(
-          <div className="grid grid-cols-2 p-1 my-1">
+          <div className="grid grid-cols-2 p-1 m-1">
             <div>
               <TextTransition
                 className="text-2xl font-extrabold"
@@ -114,27 +118,48 @@ function Dash() {
           <div className="mt-2">da L</div>
         </div>
 
-        <div className="bg-green-50 w-full h-full">
+        <div className="bg-white w-full h-full">
           <div className="m-2">
-            <h1 className="font-thin text-xl">55 Bus</h1>
+            <h1 className="font-light text-xl">55 Bus</h1>
           </div>
           <div className="mt-10">{blocks}</div>
         </div>
-        <div className="bg-[#BADA55] w-full h-full grid grid-rows-6 p-4 ">
+        <div className="bg-gray-50 w-full h-full grid grid-rows-6 p-4 ">
           <div>
-            <h1 className="font-thin text-xl">Traffic</h1>
+            <h1 className="font-light text-xl">Traffic</h1>
           </div>
           <div className="h-fit w-fit">
-            Bucktown <p>{driveData[0]}</p>
+            <p className="font-thin text-sm ">
+              Bucktown <br />{" "}
+              <span className="font-extrabold text-xl">
+                {Math.round(driveData[0] / 60)}
+              </span>{" "}
+              min
+            </p>
           </div>
           <div className="h-fit w-fit">
-            Lakeview <br /> <p>{driveData[1]}</p>
+            <p className="font-thin text-sm ">
+              Lakeview <br />{" "}
+              <span className="font-extrabold text-xl">
+                {Math.round(driveData[1] / 60)}
+              </span>{" "}
+              min
+            </p>
           </div>{" "}
           <div className="h-fit w-fit">
-            Schaumburg <br /> <p>{driveData[2]}</p>
+            <p className="font-thin text-sm ">
+              Schaumburg <br />{" "}
+              <span className="font-extrabold text-xl">
+                {Math.round(driveData[2] / 60)}
+              </span>{" "}
+              min
+            </p>
           </div>{" "}
           <div className="h-fit w-fit">
-            Devin&apos;s House <br /> <p>2 minute walk</p>
+            <p className="font-thin text-sm ">
+              Devin&apos;s House <br />{" "}
+              <span className="font-extrabold text-xl">2</span> min (walking)
+            </p>
           </div>{" "}
           <div className="h-fit w-fit mt-4">
             Updated: <br />

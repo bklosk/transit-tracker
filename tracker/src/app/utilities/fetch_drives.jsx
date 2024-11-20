@@ -22,8 +22,8 @@ export default async function fetch_drives() {
 
   // then, we serve the data through to the frontend
   return [
-    response_json.rows[0].elements[0].duration.text,
-    response_json.rows[0].elements[1].duration.text,
-    response_json.rows[0].elements[2].duration.text,
+    response_json.rows[0].elements[0].duration.value,
+    response_json.rows[0].elements[1].duration.value,
+    response_json.rows[0].elements[2].duration.value,
   ];
 }
