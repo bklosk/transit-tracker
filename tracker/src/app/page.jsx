@@ -4,6 +4,8 @@ import cta_logo from "./assets/cta.png";
 import metra_logo from "./assets/metra.png";
 import fetch_drives from ".//utilities/fetch_drives";
 import fetch_bus from ".//utilities/fetch_bus";
+import fetch_train from ".//utilities/fetch_train";
+import moment from "moment";
 
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +27,7 @@ export default function Home() {
 function Dash() {
   const [updatedAt, setUpdatedAt] = useState(0);
   const [blocks, setBlocks] = useState([]);
+  const [trainBlocks, setTrainBlocks] = useState([]);
   const {
     isPending: pendingDrives,
     data: driveData,
@@ -44,6 +47,18 @@ function Dash() {
     queryFn: fetch_bus,
     refetchInterval: 15000,
   });
+
+  const { isPending: pendingTrain, data: trainData } = useQuery({
+    queryKey: ["trains"],
+    queryFn: fetch_train,
+    refetchInterval: 15000,
+  });
+
+  function timestamp_to_time(timestamp) {
+    const date = new Date(timestamp);
+    const time = date.toLocaleTimeString();
+    return time;
+  }
 
   useEffect(() => {
     if (busUpdatedAt > updatedAt) {
@@ -78,11 +93,40 @@ function Dash() {
     }
   }, [busData]);
 
-  function timestamp_to_time(timestamp) {
-    const date = new Date(timestamp);
-    const time = date.toLocaleTimeString();
-    return time;
-  }
+  useEffect(() => {
+    if (trainData) {
+      const newTrains = [];
+      for (var i = 0; i < trainData.length; i++) {
+        var color = "null";
+        if (trainData[i].stpId == "30099") {
+          color = "#688E26";
+        } else if (trainData[i].stpId == "30223") {
+          color = "#6B0F1A";
+        }
+        newTrains.push(
+          <div
+            className="grid grid-cols-2 my-2 mx-1 px-1 py-1 h-[55px] drop-shadow-lg bg-[var(--user-color)] text-white"
+            style={{
+              "--user-color": color,
+            }}
+          >
+            <div className="relative">
+              <TextTransition
+                className="absolute text-sm bottom-0 font-extrabold"
+                key={"train_pred" + i}
+              >
+                {moment().to(trainData[i].arrT, true)}
+              </TextTransition>
+            </div>
+            <div className="relative text-sm">
+              <p className="absolute right-0 bottom-0">{trainData[i].destNm}</p>
+            </div>
+          </div>
+        );
+      }
+      setTrainBlocks(newTrains);
+    }
+  }, [trainData]);
 
   if (pendingDrives || pendingBus) {
     return (
@@ -101,28 +145,27 @@ function Dash() {
         <div className="bg-white w-full h-full"></div>
       </div>
       <div className="grid grid-cols-4 p-20 items-center justify-items-center min-h-screen gap-0 font-[family-name:var(--font-geist-sans)]">
-        <div className="bg-gray-50 w-full h-full">
+        <div className="bg-white w-full h-full">
           <Image
             src={metra_logo}
             alt="Metra logo"
-            className="h-12 w-auto p-2 mt-4"
-          ></Image>
-          <div className="bg-red-100 mt-10">metra</div>
+            className="h-10 w-auto p-2 mt-4 m-auto"
+          />
         </div>
-        <div className="bg-red-50 w-full h-full">
+        <div className="bg-gray-50 w-full h-full">
           <Image
             src={cta_logo}
             alt="CTA logo"
-            className="h-24 w-auto p-2"
-          ></Image>
-          <div className="mt-2">da L</div>
+            className="h-20 w-auto p-2 m-auto"
+          />
+          <div className="mt-2">{trainBlocks}</div>
         </div>
 
         <div className="bg-white w-full h-full">
-          <div className="m-2">
+          <div className="m-2 mt-4">
             <h1 className="font-light text-xl">55 Bus</h1>
           </div>
-          <div className="mt-10">{blocks}</div>
+          <div className="mt-9">{blocks}</div>
         </div>
         <div className="bg-gray-50 w-full h-full grid grid-rows-6 p-4 ">
           <div>
@@ -158,14 +201,16 @@ function Dash() {
           <div className="h-fit w-fit">
             <p className="font-thin text-sm ">
               Devin&apos;s House <br />{" "}
-              <span className="font-extrabold text-xl">2</span> min (walking)
+              <span className="font-extrabold text-xl">2</span> min
             </p>
-          </div>{" "}
-          <div className="h-fit w-fit mt-4">
-            Updated: <br />
-            <p>{timestamp_to_time(updatedAt)}</p>
-          </div>{" "}
+          </div>
         </div>
+      </div>
+      <div className="relative mb-20 bg-red-200">
+        <p>
+          Updated:
+          {timestamp_to_time(updatedAt)}
+        </p>
       </div>
     </main>
   );

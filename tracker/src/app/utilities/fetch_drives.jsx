@@ -13,6 +13,7 @@ export default async function fetch_drives() {
         destinations:
           "41.911475, -87.668961|41.943586, -87.654416|Schaumburg, IL",
         key: process.env.NEXT_PUBLIC_GOOGLE_KEY,
+        departure_time: "now",
       }).toString(),
     requestOptions
   );
