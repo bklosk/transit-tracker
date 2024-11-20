@@ -3,11 +3,15 @@ import Image from "next/image";
 import cta_logo from "./assets/cta.png";
 import metra_logo from "./assets/metra.png";
 import fetch_drives from ".//utilities/fetch_drives";
+import fetch_bus from ".//utilities/fetch_bus";
+
+import { useEffect, useState } from "react";
 import {
   useQuery,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import TextTransition from "react-text-transition";
 
 const queryClient = new QueryClient();
 export default function Home() {
@@ -18,25 +22,79 @@ export default function Home() {
   );
 }
 
-function handleClick() {
-  console.log("click");
-  refetch;
-}
-
 function Dash() {
-  const { isPending: pendingDrives, data: driveData } = useQuery({
+  const [updatedAt, setUpdatedAt] = useState(0);
+  const [blocks, setBlocks] = useState([]);
+  const {
+    isPending: pendingDrives,
+    data: driveData,
+    dataUpdatedAt: driveUpdatedAt,
+  } = useQuery({
     queryKey: ["drives"],
     queryFn: fetch_drives,
-    refetchInterval: 1 * 6 * 10000,
+    refetchInterval: 20 * 6 * 10000,
   });
 
+  const { isPending: pendingBus, data: busData } = useQuery({
+    queryKey: ["busses"],
+    queryFn: fetch_bus,
+    refetchInterval: 15000,
+  });
+
+  useEffect(() => {
+    if (driveUpdatedAt > updatedAt) {
+      setUpdatedAt(driveUpdatedAt);
+    }
+  }, [updatedAt, driveUpdatedAt]);
+
+  useEffect(() => {
+    if (busData) {
+      const newBlocks = [];
+      for (var i = 0; i < busData.length; i++) {
+        newBlocks.push(
+          <div className="grid grid-cols-2 p-1 my-1">
+            <div>
+              <TextTransition
+                className="text-2xl font-extrabold"
+                key={"bus_pred" + i}
+              >
+                {busData[i].prdctdn}
+                <span key={"pred_span" + i} className="font-thin text-xs">
+                  min
+                </span>
+              </TextTransition>
+            </div>
+            <div className="pt-2 ml-auto mr-0 font-thin text-sm">
+              {busData[i].rtdir}
+            </div>
+          </div>
+        );
+      }
+      setBlocks(newBlocks);
+    }
+  }, [busData]);
+
+  function timestamp_to_time(timestamp) {
+    const date = new Date(timestamp);
+    const time = date.toLocaleTimeString();
+    return time;
+  }
+
+  if (pendingDrives || pendingBus) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
-    <main className="font-[family-name:var(--font-geist-sans)] bg-[#FFEAD0]">
+    <main className="font-[family-name:var(--font-geist-sans)] bg-white">
       <div className="fixed w-[75px] h-[75px] ml-0 mt-0 grid grid-rows-2 grid-cols-2">
         <div className="bg-[#eb4d14] w-full h-full"> </div>
         <div className="bg-[#eb4d14] w-full h-full"> </div>
         <div className="bg-[#eb4d14] w-full h-full"></div>
-        <div className="bg-[#FFEAD0] w-full h-full"></div>
+        <div className="bg-white w-full h-full"></div>
       </div>
       <div className="grid grid-cols-4 p-20 items-center justify-items-center min-h-screen gap-0 font-[family-name:var(--font-geist-sans)]">
         <div className="bg-gray-50 w-full h-full">
@@ -57,14 +115,31 @@ function Dash() {
         </div>
 
         <div className="bg-green-50 w-full h-full">
-          <div>CTA bus</div>
+          <div className="m-2">
+            <h1 className="font-thin text-xl">55 Bus</h1>
+          </div>
+          <div className="mt-10">{blocks}</div>
         </div>
-        <div className="bg-[#BADA55] w-full h-full grid grid-rows-4 p-4 ">
-          <div className="">Bucktown</div>
-          <h1>{driveData}</h1>
-          <div className="">Lakeview</div>
-          <div className="">Schaumburg</div>
-          <div className="">Devin&apos;s house</div>
+        <div className="bg-[#BADA55] w-full h-full grid grid-rows-6 p-4 ">
+          <div>
+            <h1 className="font-thin text-xl">Traffic</h1>
+          </div>
+          <div className="h-fit w-fit">
+            Bucktown <p>{driveData[0]}</p>
+          </div>
+          <div className="h-fit w-fit">
+            Lakeview <br /> <p>{driveData[1]}</p>
+          </div>{" "}
+          <div className="h-fit w-fit">
+            Schaumburg <br /> <p>{driveData[2]}</p>
+          </div>{" "}
+          <div className="h-fit w-fit">
+            Devin&apos;s House <br /> <p>2 minute walk</p>
+          </div>{" "}
+          <div className="h-fit w-fit mt-4">
+            Updated: <br />
+            <p>{timestamp_to_time(updatedAt)}</p>
+          </div>{" "}
         </div>
       </div>
     </main>
