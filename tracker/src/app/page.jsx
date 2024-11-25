@@ -6,6 +6,7 @@ import fetch_drives from ".//utilities/fetch_drives";
 import fetch_bus from ".//utilities/fetch_bus";
 import fetch_train from ".//utilities/fetch_train";
 import moment from "moment";
+import { motion, AnimatePresence } from "motion/react";
 
 import { useEffect, useState } from "react";
 import {
@@ -48,7 +49,7 @@ function Dash() {
     refetchInterval: 15000,
   });
 
-  const { isPending: pendingTrain, data: trainData } = useQuery({
+  var { isPending: pendingTrain, data: trainData } = useQuery({
     queryKey: ["trains"],
     queryFn: fetch_train,
     refetchInterval: 15000,
@@ -69,24 +70,39 @@ function Dash() {
   useEffect(() => {
     if (busData) {
       const newBlocks = [];
-      for (var i = 0; i < busData.length; i++) {
+      var min_word = "min";
+      var num_blocks = Math.min(busData.length, 6);
+
+      for (var i = 0; i < num_blocks; i++) {
+        if (busData[i].prdctdn == "DUE") {
+          min_word = "";
+        } else {
+          min_word = "min";
+        }
         newBlocks.push(
-          <div className="grid grid-cols-2 p-1 m-1">
-            <div>
-              <TextTransition
-                className="text-2xl font-extrabold"
-                key={"bus_pred" + i}
-              >
-                {busData[i].prdctdn}
-                <span key={"pred_span" + i} className="font-thin text-xs">
-                  min
-                </span>
-              </TextTransition>
-            </div>
-            <div className="pt-2 ml-auto mr-0 font-thin text-sm">
-              {busData[i].rtdir}
-            </div>
-          </div>
+          <AnimatePresence>
+            <motion.div
+              className="grid grid-cols-2 p-1 m-1 h-[55px] drop-shadow-lg bg-gray-500 text-white"
+              key="box"
+              exit={{ opacity: 0, y: 10 }}
+              layout
+            >
+              <div className="relative">
+                <TextTransition
+                  className="absolute text-2xl font-extrabold bottom-0"
+                  key={"bus_pred" + i}
+                >
+                  {busData[i].prdctdn}
+                  <span key={"pred_span" + i} className="font-thin text-xs">
+                    {min_word}
+                  </span>
+                </TextTransition>
+              </div>
+              <div className="relative text-sm">
+                <p className="absolute right-1 bottom-0">{busData[i].rtdir}</p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         );
       }
       setBlocks(newBlocks);
@@ -95,33 +111,43 @@ function Dash() {
 
   useEffect(() => {
     if (trainData) {
+      trainData.sort(function (a, b) {
+        return new Date(a.arrT) - new Date(b.arrT);
+      });
       const newTrains = [];
       for (var i = 0; i < trainData.length; i++) {
         var color = "null";
         if (trainData[i].stpId == "30099") {
           color = "#688E26";
         } else if (trainData[i].stpId == "30223") {
-          color = "#6B0F1A";
+          color = "#8E2634";
         }
         newTrains.push(
-          <div
-            className="grid grid-cols-2 my-2 mx-1 px-1 py-1 h-[55px] drop-shadow-lg bg-[var(--user-color)] text-white"
-            style={{
-              "--user-color": color,
-            }}
-          >
-            <div className="relative">
-              <TextTransition
-                className="absolute text-sm bottom-0 font-extrabold"
-                key={"train_pred" + i}
-              >
-                {moment().to(trainData[i].arrT, true)}
-              </TextTransition>
-            </div>
-            <div className="relative text-sm">
-              <p className="absolute right-0 bottom-0">{trainData[i].destNm}</p>
-            </div>
-          </div>
+          <AnimatePresence>
+            <motion.div
+              className="grid grid-cols-2 my-2 mx-1 px-1 py-1 h-[55px] drop-shadow-lg bg-[var(--user-color)] text-white"
+              key="trainbox"
+              exit={{ opacity: 0 }}
+              style={{
+                "--user-color": color,
+              }}
+              layout
+            >
+              <div className="relative">
+                <TextTransition
+                  className="absolute text-sm bottom-0 font-extrabold"
+                  key={"train_pred" + i}
+                >
+                  {moment().to(trainData[i].arrT, true)}
+                </TextTransition>
+              </div>
+              <div className="relative text-sm">
+                <p className="absolute right-1 bottom-0">
+                  {trainData[i].destNm}
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         );
       }
       setTrainBlocks(newTrains);
@@ -144,7 +170,7 @@ function Dash() {
         <div className="bg-[#eb4d14] w-full h-full"></div>
         <div className="bg-white w-full h-full"></div>
       </div>
-      <div className="grid grid-cols-4 p-20 items-center justify-items-center min-h-screen gap-0 font-[family-name:var(--font-geist-sans)]">
+      <div className="grid grid-cols-4 p-10 items-center justify-items-center min-h-screen gap-0 font-[family-name:var(--font-geist-sans)]">
         <div className="bg-white w-full h-full">
           <Image
             src={metra_logo}
@@ -152,7 +178,7 @@ function Dash() {
             className="h-10 w-auto p-2 mt-4 m-auto"
           />
         </div>
-        <div className="bg-gray-50 w-full h-full">
+        <div className="bg-white w-full h-full">
           <Image
             src={cta_logo}
             alt="CTA logo"
@@ -163,13 +189,22 @@ function Dash() {
 
         <div className="bg-white w-full h-full">
           <div className="m-2 mt-4">
-            <h1 className="font-light text-xl">55 Bus</h1>
+            <h1 className="font-extrabold text-center text-3xl">55 Bus</h1>
           </div>
           <div className="mt-9">{blocks}</div>
         </div>
         <div className="bg-gray-50 w-full h-full grid grid-rows-6 p-4 ">
           <div>
-            <h1 className="font-light text-xl">Traffic</h1>
+            <h1 className="font-extrabold text-center text-xl">Traffic</h1>
+          </div>
+          <div className="h-fit w-fit">
+            <p className="font-thin text-sm ">
+              Hinsdale <br />{" "}
+              <span className="font-extrabold text-xl">
+                {Math.round(driveData[3] / 60)}
+              </span>{" "}
+              min
+            </p>
           </div>
           <div className="h-fit w-fit">
             <p className="font-thin text-sm ">
@@ -205,12 +240,7 @@ function Dash() {
             </p>
           </div>
         </div>
-      </div>
-      <div className="relative mb-20 bg-red-200">
-        <p>
-          Updated:
-          {timestamp_to_time(updatedAt)}
-        </p>
+        <p>Updated: {timestamp_to_time(updatedAt)}</p>
       </div>
     </main>
   );

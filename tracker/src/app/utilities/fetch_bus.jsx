@@ -11,7 +11,7 @@ export default async function fetch_bus() {
       new URLSearchParams({
         key: process.env.NEXT_PUBLIC_BUS_KEY,
         format: "json",
-        rt: 55,
+        rt: [55, 171],
         stpid: [17563, 10570],
       }).toString(),
     requestOptions
