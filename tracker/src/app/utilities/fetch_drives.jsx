@@ -21,11 +21,11 @@ export default async function fetch_drives() {
   // wait for server to fulfill promise (that is the actual lingo)
   let response_json = await response.json();
 
-  // then, we serve the data through to the frontend
-  return [
-    response_json.rows[0].elements[0].duration_in_traffic.value,
-    response_json.rows[0].elements[1].duration_in_traffic.value,
-    response_json.rows[0].elements[2].duration_in_traffic.value,
-    response_json.rows[0].elements[3].duration_in_traffic.value,
-  ];
+  // return the JSON object
+  return {
+    Bucktown: response_json.rows[0].elements[0].duration_in_traffic.value,
+    Lakeview: response_json.rows[0].elements[1].duration_in_traffic.value,
+    Schaumburg: response_json.rows[0].elements[2].duration_in_traffic.value,
+    Hinsdale: response_json.rows[0].elements[3].duration_in_traffic.value,
+  };
 }

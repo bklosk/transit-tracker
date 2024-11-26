@@ -5,6 +5,7 @@ import metra_logo from "./assets/metra.png";
 import fetch_drives from ".//utilities/fetch_drives";
 import fetch_bus from ".//utilities/fetch_bus";
 import fetch_train from ".//utilities/fetch_train";
+import fetch_metra from ".//utilities/fetch_metra";
 import moment from "moment";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -16,6 +17,7 @@ import {
 } from "@tanstack/react-query";
 import TextTransition from "react-text-transition";
 
+fetch_metra();
 const queryClient = new QueryClient();
 export default function Home() {
   return (
@@ -29,6 +31,15 @@ function Dash() {
   const [updatedAt, setUpdatedAt] = useState(0);
   const [blocks, setBlocks] = useState([]);
   const [trainBlocks, setTrainBlocks] = useState([]);
+  const [driveBlocks, setDriveBlocks] = useState([]);
+  const [metraBlocks, setMetraBlocks] = useState([]);
+
+  const { isPending: pendingMetra, data: metraData } = useQuery({
+    queryKey: ["metra"],
+    queryFn: fetch_metra,
+    refetchInterval: 20000,
+  });
+
   const {
     isPending: pendingDrives,
     data: driveData,
@@ -84,7 +95,7 @@ function Dash() {
             <motion.div
               className="grid grid-cols-2 p-1 m-1 h-[55px] drop-shadow-lg bg-gray-500 text-white"
               key="box"
-              exit={{ opacity: 0, y: 10 }}
+              exit={{ opacity: 0, y: 20 }}
               layout
             >
               <div className="relative">
@@ -154,6 +165,49 @@ function Dash() {
     }
   }, [trainData]);
 
+  useEffect(() => {
+    if (driveData) {
+      var newDriveBlocks = [];
+      for (const key in driveData) {
+        newDriveBlocks.push(
+          <div
+            key={key}
+            className="w-full p-1 h-[55px] drop-shadow-lg my-2 bg-gray-700 text-white"
+          >
+            <p key={key} className="font-medium text-sm ">
+              {key} <br />{" "}
+              <span key={key} className="font-extrabold text-xl">
+                {Math.round(driveData[key] / 60)}
+              </span>
+              min
+            </p>
+          </div>
+        );
+      }
+      setDriveBlocks(newDriveBlocks);
+    }
+  }, [driveData]);
+
+  useEffect(() => {
+    if (metraData) {
+      var newMetraBlocks = [];
+      for (let i of metraData) {
+        newMetraBlocks.push(
+          <div
+            key={"div" + i.label}
+            className="w-full p-1 h-[55px] grid grid-cols-2 drop-shadow-lg my-2 bg-gray-700 text-white"
+          >
+            <p key={"p" + i.label} className="font-medium text-sm ">
+              {moment().to(i.arrival, true)} <br />
+              {i.label}
+            </p>
+          </div>
+        );
+      }
+      setMetraBlocks(newMetraBlocks);
+    }
+  }, [metraData]);
+
   if (pendingDrives || pendingBus) {
     return (
       <div>
@@ -177,6 +231,7 @@ function Dash() {
             alt="Metra logo"
             className="h-10 w-auto p-2 mt-4 m-auto"
           />
+          <div className="mt-8 mr-1">{metraBlocks}</div>
         </div>
         <div className="bg-white w-full h-full">
           <Image
@@ -193,54 +248,13 @@ function Dash() {
           </div>
           <div className="mt-9">{blocks}</div>
         </div>
-        <div className="bg-gray-50 w-full h-full grid grid-rows-6 p-4 ">
+        <div className="bg-white w-full h-full px-1 py-4 ">
           <div>
-            <h1 className="font-extrabold text-center text-xl">Traffic</h1>
+            <h1 className="font-extrabold text-center text-3xl">Traffic</h1>
           </div>
-          <div className="h-fit w-fit">
-            <p className="font-thin text-sm ">
-              Hinsdale <br />{" "}
-              <span className="font-extrabold text-xl">
-                {Math.round(driveData[3] / 60)}
-              </span>{" "}
-              min
-            </p>
-          </div>
-          <div className="h-fit w-fit">
-            <p className="font-thin text-sm ">
-              Bucktown <br />{" "}
-              <span className="font-extrabold text-xl">
-                {Math.round(driveData[0] / 60)}
-              </span>{" "}
-              min
-            </p>
-          </div>
-          <div className="h-fit w-fit">
-            <p className="font-thin text-sm ">
-              Lakeview <br />{" "}
-              <span className="font-extrabold text-xl">
-                {Math.round(driveData[1] / 60)}
-              </span>{" "}
-              min
-            </p>
-          </div>{" "}
-          <div className="h-fit w-fit">
-            <p className="font-thin text-sm ">
-              Schaumburg <br />{" "}
-              <span className="font-extrabold text-xl">
-                {Math.round(driveData[2] / 60)}
-              </span>{" "}
-              min
-            </p>
-          </div>{" "}
-          <div className="h-fit w-fit">
-            <p className="font-thin text-sm ">
-              Devin&apos;s House <br />{" "}
-              <span className="font-extrabold text-xl">2</span> min
-            </p>
-          </div>
+          <div className="mt-9">{driveBlocks}</div>
         </div>
-        <p>Updated: {timestamp_to_time(updatedAt)}</p>
+        <p className="">Updated: {timestamp_to_time(updatedAt)}</p>
       </div>
     </main>
   );
