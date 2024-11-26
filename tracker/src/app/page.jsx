@@ -15,7 +15,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import TextTransition from "react-text-transition";
+import TextTransition, { presets } from "react-text-transition";
 
 fetch_metra();
 const queryClient = new QueryClient();
@@ -91,35 +91,33 @@ function Dash() {
           min_word = "min";
         }
         newBlocks.push(
-          <AnimatePresence>
-            <motion.div
-              className="grid grid-cols-2 p-1 m-1 h-[55px] drop-shadow-lg bg-gray-500 text-white"
-              key={"bus" + { i }}
-              layout
-              layoutTransition={{
-                duration: 0.5,
-                type: "spring",
-                stiffness: 100,
-              }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, y: 20, duration: 0.5 }}
-            >
-              <div className="relative">
-                <TextTransition
-                  className="absolute text-2xl font-extrabold bottom-0"
-                  key={"bus_pred" + i}
-                >
-                  {busData[i].prdctdn}
-                  <span key={"pred_span" + i} className="font-thin text-xs">
-                    {min_word}
-                  </span>
-                </TextTransition>
-              </div>
-              <div className="relative text-sm">
-                <p className="absolute right-1 bottom-0">{busData[i].rtdir}</p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            className="grid grid-cols-2 p-1 m-1 h-[55px] drop-shadow-lg bg-gray-500 text-white"
+            key={"bus" + busData[i].vid}
+            layout
+            layoutTransition={{
+              duration: 2,
+              type: "spring",
+              stiffness: 100,
+            }}
+            exit={{ opacity: 0, y: 20, duration: 0.5 }}
+          >
+            <div className="relative">
+              <TextTransition
+                springConfig={presets.gentle}
+                className="absolute text-2xl font-extrabold bottom-0"
+                key={"bus_pred" + i}
+              >
+                {busData[i].prdctdn}
+                <span key={"pred_span" + i} className="font-thin text-xs">
+                  {min_word}
+                </span>
+              </TextTransition>
+            </div>
+            <div className="relative text-sm">
+              <p className="absolute right-1 bottom-0">{busData[i].rtdir}</p>
+            </div>
+          </motion.div>
         );
       }
       setBlocks(newBlocks);
@@ -147,38 +145,34 @@ function Dash() {
           color = "#8E2634";
         }
         newTrains.push(
-          <AnimatePresence>
-            <motion.div
-              className="grid grid-cols-2 my-2 mx-1 px-1 py-1 h-[55px] drop-shadow-lg bg-[var(--user-color)] text-white"
-              key="trainbox"
-              layout
-              layoutTransition={{
-                duration: 0.5,
-                type: "spring",
-                stiffness: 100,
-              }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, y: 20, duration: 0.5 }}
-              style={{
-                "--user-color": color,
-              }}
-            >
-              <div className="relative">
-                <TextTransition
-                  className="absolute bottom-0 text-2xl font-extrabold"
-                  key={"train_pred" + i}
-                >
-                  {minutes}
-                  <span className="font-thin text-xs">{min_word}</span>
-                </TextTransition>
-              </div>
-              <div className="relative text-sm">
-                <p className="absolute right-1 bottom-0">
-                  {trainData[i].destNm}
-                </p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            className="grid grid-cols-2 my-2 mx-1 px-1 py-1 h-[55px] drop-shadow-lg bg-[var(--user-color)] text-white"
+            key={"train" + trainData[i].rn}
+            layout
+            layoutTransition={{
+              duration: 1.5,
+              type: "spring",
+              stiffness: 20,
+            }}
+            exit={{ opacity: 0, y: -20, duration: 0.3 }}
+            style={{
+              "--user-color": color,
+            }}
+          >
+            <div className="relative">
+              <TextTransition
+                springConfig={presets.gentle}
+                className="absolute bottom-0 text-2xl font-extrabold"
+                key={"train_pred" + i}
+              >
+                {minutes}
+                <span className="font-thin text-xs">{min_word}</span>
+              </TextTransition>
+            </div>
+            <div className="relative text-sm">
+              <p className="absolute right-1 bottom-0">{trainData[i].destNm}</p>
+            </div>
+          </motion.div>
         );
       }
       setTrainBlocks(newTrains);
@@ -276,14 +270,20 @@ function Dash() {
             alt="CTA logo"
             className="h-20 w-auto p-2 m-auto"
           />
-          <div className="mt-2">{trainBlocks}</div>
+          <div className="mt-2">
+            {" "}
+            <AnimatePresence>{trainBlocks}</AnimatePresence>
+          </div>
         </div>
 
         <div className="bg-white w-full h-full">
           <div className="m-2 mt-4">
             <h1 className="font-extrabold text-center text-3xl">55 Bus</h1>
           </div>
-          <div className="mt-9">{blocks}</div>
+          <div className="mt-9">
+            {" "}
+            <AnimatePresence>{blocks}</AnimatePresence>
+          </div>
         </div>
         <div className="bg-white w-full h-full px-1 py-4 ">
           <div>
