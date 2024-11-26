@@ -94,9 +94,15 @@ function Dash() {
           <AnimatePresence>
             <motion.div
               className="grid grid-cols-2 p-1 m-1 h-[55px] drop-shadow-lg bg-gray-500 text-white"
-              key="box"
-              exit={{ opacity: 0, y: 20 }}
+              key={"bus" + { i }}
               layout
+              layoutTransition={{
+                duration: 0.5,
+                type: "spring",
+                stiffness: 100,
+              }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: 20, duration: 0.5 }}
             >
               <div className="relative">
                 <TextTransition
@@ -127,6 +133,13 @@ function Dash() {
       });
       const newTrains = [];
       for (var i = 0; i < trainData.length; i++) {
+        var minutes = -1 * moment().diff(trainData[i].arrT, "minutes");
+        var min_word = "min";
+        if (minutes < 1) {
+          minutes = "DUE";
+          min_word = "";
+        }
+
         var color = "null";
         if (trainData[i].stpId == "30099") {
           color = "#688E26";
@@ -138,18 +151,25 @@ function Dash() {
             <motion.div
               className="grid grid-cols-2 my-2 mx-1 px-1 py-1 h-[55px] drop-shadow-lg bg-[var(--user-color)] text-white"
               key="trainbox"
-              exit={{ opacity: 0 }}
+              layout
+              layoutTransition={{
+                duration: 0.5,
+                type: "spring",
+                stiffness: 100,
+              }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: 20, duration: 0.5 }}
               style={{
                 "--user-color": color,
               }}
-              layout
             >
               <div className="relative">
                 <TextTransition
-                  className="absolute text-sm bottom-0 font-extrabold"
+                  className="absolute bottom-2 text-2xl font-extrabold"
                   key={"train_pred" + i}
                 >
-                  {moment().to(trainData[i].arrT, true)}
+                  {minutes}
+                  <span className="font-thin text-xs">{min_word}</span>
                 </TextTransition>
               </div>
               <div className="relative text-sm">
@@ -190,19 +210,26 @@ function Dash() {
 
   useEffect(() => {
     if (metraData) {
+      metraData.sort(function (a, b) {
+        return new Date(a.arrival) - new Date(b.arrival);
+      });
       var newMetraBlocks = [];
       for (let i of metraData) {
-        newMetraBlocks.push(
-          <div
-            key={"div" + i.label}
-            className="w-full p-1 h-[55px] grid grid-cols-2 drop-shadow-lg my-2 bg-gray-700 text-white"
-          >
-            <p key={"p" + i.label} className="font-medium text-sm ">
-              {moment().to(i.arrival, true)} <br />
-              {i.label}
-            </p>
-          </div>
-        );
+        if (i.direction == 1) {
+          newMetraBlocks.push(
+            <div
+              key={"div" + i.label}
+              className="w-full p-1 h-[55px] grid grid-cols-2 drop-shadow-lg my-2 bg-gray-700 text-white"
+            >
+              <p key={"p" + i.label} className="font-medium text-sm ">
+                {moment().to(i.arrival, true)} <br />
+                {i.trip}
+                {i.label}
+                {i.delay}
+              </p>
+            </div>
+          );
+        }
       }
       setMetraBlocks(newMetraBlocks);
     }
