@@ -165,7 +165,7 @@ function Dash() {
             >
               <div className="relative">
                 <TextTransition
-                  className="absolute bottom-2 text-2xl font-extrabold"
+                  className="absolute bottom-0 text-2xl font-extrabold"
                   key={"train_pred" + i}
                 >
                   {minutes}
@@ -216,17 +216,27 @@ function Dash() {
       var newMetraBlocks = [];
       for (let i of metraData) {
         if (i.direction == 1) {
+          var minutes = -1 * moment().diff(i.arrival, "minutes");
+          var min_word = "min";
+          if (minutes < 1) {
+            minutes = "DUE";
+            min_word = "";
+          }
           newMetraBlocks.push(
             <div
               key={"div" + i.label}
-              className="w-full p-1 h-[55px] grid grid-cols-2 drop-shadow-lg my-2 bg-gray-700 text-white"
+              className="relative w-full p-1 h-[55px] grid grid-cols-2 drop-shadow-lg my-2 bg-gray-700 text-white"
             >
-              <p key={"p" + i.label} className="font-medium text-sm ">
-                {moment().to(i.arrival, true)} <br />
-                {i.trip}
-                {i.label}
-                {i.delay}
-              </p>
+              <div
+                className="absolute ml-1 bottom-0 text-2xl font-extrabold"
+                key={"metra_pred" + i}
+              >
+                {minutes}
+                <span className="font-thin text-xs">{min_word}</span>
+              </div>
+              <div className="absolute right-1 bottom-1 text-sm">
+                {i.trip_headsign}
+              </div>
             </div>
           );
         }
@@ -281,7 +291,6 @@ function Dash() {
           </div>
           <div className="mt-9">{driveBlocks}</div>
         </div>
-        <p className="">Updated: {timestamp_to_time(updatedAt)}</p>
       </div>
     </main>
   );
