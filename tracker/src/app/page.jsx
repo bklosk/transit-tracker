@@ -34,6 +34,13 @@ function Dash() {
   const [driveBlocks, setDriveBlocks] = useState([]);
   const [metraBlocks, setMetraBlocks] = useState([]);
 
+  const layout_transition = {
+    duration: 2,
+    type: "spring",
+    stiffness: 100,
+  };
+  const item_exit = { opacity: 0, y: 20, duration: 0.5 };
+
   const { isPending: pendingMetra, data: metraData } = useQuery({
     queryKey: ["metra"],
     queryFn: fetch_metra,
@@ -93,14 +100,10 @@ function Dash() {
         newBlocks.push(
           <motion.div
             className="grid grid-cols-2 p-1 m-1 h-[55px] drop-shadow-lg bg-gray-500 text-white"
-            key={"bus" + busData[i].vid}
+            key={"bus" + busData[i].tatripid}
             layout
-            layoutTransition={{
-              duration: 2,
-              type: "spring",
-              stiffness: 100,
-            }}
-            exit={{ opacity: 0, y: 20, duration: 0.5 }}
+            layoutTransition={layout_transition}
+            exit={item_exit}
           >
             <div className="relative">
               <TextTransition
@@ -149,12 +152,8 @@ function Dash() {
             className="grid grid-cols-2 my-2 mx-1 px-1 py-1 h-[55px] drop-shadow-lg bg-[var(--user-color)] text-white"
             key={"train" + trainData[i].rn}
             layout
-            layoutTransition={{
-              duration: 1.5,
-              type: "spring",
-              stiffness: 20,
-            }}
-            exit={{ opacity: 0, y: -20, duration: 0.3 }}
+            layoutTransition={layout_transition}
+            exit={item_exit}
             style={{
               "--user-color": color,
             }}

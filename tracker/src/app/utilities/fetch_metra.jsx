@@ -29,7 +29,6 @@ export default async function fetch_metra() {
       var me_trip = me_trips.find(
         (element) => element.trip_id == train.trip_update.trip.trip_id
       );
-      console.log(me_trip);
       if (stop.stop_id == "55-56-57TH") {
         nb_me_trains.push({
           vehicle: train.trip_update.vehicle.id,
